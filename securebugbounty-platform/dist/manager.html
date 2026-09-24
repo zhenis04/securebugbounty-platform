@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора — SecureBugBounty</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            padding: 20px 28px;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 16px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #818cf8, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-links a {
+            text-decoration: none;
+            color: #818cf8;
+            font-weight: 600;
+            margin-left: 20px;
+            transition: color 0.2s;
+        }
+
+        .header-links a:hover {
+            color: #a78bfa;
+        }
+
+        /* Login form */
+        .login-card {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .login-card h2 {
+            margin-bottom: 24px;
+            color: #c7d2fe;
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.6);
+            color: #e2e8f0;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .login-card input:focus {
+            border-color: #818cf8;
+        }
+
+        .login-card .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .login-card .btn-login:hover {
+            opacity: 0.9;
+        }
+
+        .login-error {
+            color: #f87171;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+
+        .card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #c7d2fe;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            padding: 10px 22px;
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 10px;
+            background: transparent;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border-color: transparent;
+        }
+
+        .tab-btn:hover:not(.active) {
+            border-color: #818cf8;
+            color: #c7d2fe;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        }
+
+        th {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        /* Badges */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .badge-admin {
+            background: rgba(168, 85, 247, 0.2);
+            color: #c084fc;
+        }
+
+        .badge-user {
+            background: rgba(100, 116, 139, 0.2);
+            color: #94a3b8;
+        }
+
+        .badge-category {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+        }
+
+        .points {
+            font-weight: 700;
+            color: #818cf8;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Buttons */
+        .btn {
+            border: none;
+            padding: 7px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-penalty {
+            background: rgba(251, 146, 60, 0.15);
+            color: #fb923c;
+            margin-right: 6px;
+        }
+
+        .btn-penalty:hover {
+            background: rgba(251, 146, 60, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 10px;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.85;
+        }
+
+        .btn-refresh {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            padding: 10px 18px;
+            font-size: 13px;
+        }
+
+        .btn-refresh:hover {
+            background: rgba(99, 102, 241, 0.3);
+        }
+
+        /* Forms */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .form-grid.cols-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 14px;
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.5);
+            color: #e2e8f0;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #818cf8;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Protected label */
+        .protected {
+            color: #475569;
+            font-size: 11px;
+            font-style: italic;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            animation: fadeIn 0.3s;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .solve-count {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid.cols-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Login screen -->
+    <div id="loginScreen" class="login-card">
+        <h2>🔐 Вход в админ-панель</h2>
+        <input type="text" id="loginUsername" placeholder="Логин" autocomplete="username">
+        <input type="password" id="loginPassword" placeholder="Пароль" autocomplete="current-password">
+        <button class="btn-login" onclick="doLogin()">Войти</button>
+        <div id="loginError" class="login-error" style="display:none;"></div>
+    </div>
+
+    <!-- Main panel (hidden until login) -->
+    <div id="mainPanel" class="container" style="display:none;">
+        <div class="header">
+            <h1>🛡️ SecureBugBounty — Админ-панель</h1>
+            <div class="header-links">
+                <a href="/">← На сайт</a>
+                <a href="#" onclick="logout()">Выйти</a>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('users')">👥 Пользователи</button>
+            <button class="tab-btn" onclick="switchTab('challenges')">🏴 Задания</button>
+            <button class="tab-btn" onclick="switchTab('scoreboard')">🏆 Рейтинг</button>
+        </div>
+
+        <div id="alertArea"></div>
+
+        <!-- TAB: Users -->
+        <div id="tab-users" class="tab-content active">
+            <div class="card">
+                <h2>➕ Создать пользователя</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Логин</label>
+                        <input type="text" id="newUsername" placeholder="username">
+                    </div>
+                    <div class="form-group">
+                        <label>Пароль</label>
+                        <input type="password" id="newPassword" placeholder="мин. 4 символа">
+                    </div>
+                    <div class="form-group">
+                        <label>Полное имя</label>
+                        <input type="text" id="newFullName" placeholder="Иван Иванов">
+                    </div>
+                    <div class="form-group">
+                        <label>Роль</label>
+                        <select id="newRole">
+                            <option value="USER">Пользователь</option>
+                            <option value="ADMIN">Администратор</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="createUser()">Создать</button>
+            </div>
+
+            <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                    <h2 style="margin-bottom:0;">📋 Список пользователей</h2>
+                    <button class="btn btn-refresh" onclick="loadUsers()">🔄 Обновить</button>
+                </div>
+                <div id="usersLoading" class="loading">Загрузка...</div>
+                <table id="usersTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>Пользователь</th>
+                            <th>Логин</th>
+                            <th>Роль</th>
+                            <th>Баллы</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB: Challenges -->
+        <div id="tab-challenges" class="tab-content">
+            <div class="card">
+                <h2>➕ Создать задание (CTF)</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Название</label>
+                        <input type="text" id="chTitle" placeholder="SQL Injection 101">
+                    </div>
+                    <div class="form-group">
+                        <label>Категория</label>
+                        <input type="text" id="chCategory" placeholder="web, crypto, forensics...">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Описание</label>
+                        <textarea id="chDescription" placeholder="Описание задания..."></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Флаг (ответ)</label>
+                        <input type="text" id="chFlag" placeholder="FLAG{example_flag_here}">
+                    </div>
+                </div>
+                <div class="form-grid cols-3">
+                    <div class="form-group">
+                        <label>Макс. баллы</label>
+                        <input type="number" id="chMaxPoints" value="500" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Мин. баллы</label>
+                        <input type="number" id="chMinPoints" value="100" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Decay (снижение)</label>
+                        <input type="number" id="chDecay" value="20" min="1">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="createChallenge()">Создать задание</button>
+            </div>
+
+            <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                    <h2 style="margin-bottom:0;">🏴 Список заданий</h2>
+                    <button class="btn btn-refresh" onclick="loadChallenges()">🔄 Обновить</button>
+                </div>
+                <div id="challengesLoading" class="loading">Загрузка...</div>
+                <table id="challengesTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Категория</th>
+                            <th>Баллы (текущие)</th>
+                            <th>Решили</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="challengesList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB: Scoreboard -->
+        <div id="tab-scoreboard" class="tab-content">
+            <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                    <h2 style="margin-bottom:0;">🏆 Рейтинг участников</h2>
+                    <button class="btn btn-refresh" onclick="loadScoreboard()">🔄 Обновить</button>
+                </div>
+                <div id="scoreboardLoading" class="loading">Загрузка...</div>
+                <table id="scoreboardTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Участник</th>
+                            <th>Баллы</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scoreboardList"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---- State ----
+        let authToken = localStorage.getItem('adminToken') || null;
+
+        // ---- Auth ----
+        async function doLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorEl = document.getElementById('loginError');
+            errorEl.style.display = 'none';
+
+            if (!username || !password) {
+                errorEl.textContent = 'Заполните логин и пароль';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    errorEl.textContent = data.error || 'Ошибка входа';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+
+                if (data.user.role !== 'ADMIN') {
+                    errorEl.textContent = 'Доступ только для администраторов';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+
+                authToken = data.token;
+                localStorage.setItem('adminToken', authToken);
+                showMainPanel();
+            } catch (e) {
+                errorEl.textContent = 'Ошибка сети';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        function logout() {
+            authToken = null;
+            localStorage.removeItem('adminToken');
+            document.getElementById('mainPanel').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'block';
+        }
+
+        function authHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + authToken
+            };
+        }
+
+        async function apiFetch(url, options = {}) {
+            options.headers = { ...authHeaders(), ...(options.headers || {}) };
+            const res = await fetch(url, options);
+            if (res.status === 401) {
+                logout();
+                showAlert('Сессия истекла, войдите заново', 'error');
+                throw new Error('Unauthorized');
+            }
+            return res;
+        }
+
+        // ---- UI helpers ----
+        function showAlert(msg, type = 'success') {
+            const area = document.getElementById('alertArea');
+            area.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+            setTimeout(() => area.innerHTML = '', 4000);
+        }
+
+        function switchTab(name) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + name).classList.add('active');
+
+            if (name === 'users') loadUsers();
+            if (name === 'challenges') loadChallenges();
+            if (name === 'scoreboard') loadScoreboard();
+        }
+
+        async function showMainPanel() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainPanel').style.display = 'block';
+            loadUsers();
+        }
+
+        // ---- Users ----
+        async function loadUsers() {
+            document.getElementById('usersLoading').style.display = 'block';
+            document.getElementById('usersTable').style.display = 'none';
+            try {
+                const res = await apiFetch('/api/users');
+                const users = await res.json();
+                const tbody = document.getElementById('usersList');
+                tbody.innerHTML = '';
+
+                users.forEach(user => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-weight:600;color:#f1f5f9;">${escapeHtml(user.fullName)}</td>
+                        <td style="font-family:monospace;color:#94a3b8;">${escapeHtml(user.username)}</td>
+                        <td><span class="badge ${user.role === 'ADMIN' ? 'badge-admin' : 'badge-user'}">${user.role}</span></td>
+                        <td class="points">${user.totalPoints}</td>
+                        <td>
+                            ${user.username !== 'csadmin' ?
+                            `<button onclick="penalizeUser('${user.id}', '${escapeHtml(user.username)}')" class="btn btn-penalty">Штраф</button>
+                             <button onclick="deleteUser('${user.id}', '${escapeHtml(user.username)}')" class="btn btn-delete">Удалить</button>` :
+                            '<span class="protected">Защищён</span>'}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('usersLoading').style.display = 'none';
+                document.getElementById('usersTable').style.display = 'table';
+            } catch (e) {
+                if (e.message !== 'Unauthorized') showAlert('Ошибка загрузки пользователей', 'error');
+            }
+        }
+
+        async function createUser() {
+            const data = {
+                username: document.getElementById('newUsername').value.trim(),
+                password: document.getElementById('newPassword').value,
+                fullName: document.getElementById('newFullName').value.trim(),
+                role: document.getElementById('newRole').value
+            };
+
+            if (!data.username || !data.password || !data.fullName) {
+                showAlert('Заполните все поля', 'error');
+                return;
+            }
+
+            try {
+                const res = await apiFetch('/api/users', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (res.ok) {
+                    showAlert(`Пользователь "${data.username}" создан`);
+                    document.getElementById('newUsername').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('newFullName').value = '';
+                    loadUsers();
+                } else {
+                    showAlert(result.error || 'Ошибка создания', 'error');
+                }
+            } catch (e) {
+                if (e.message !== 'Unauthorized') showAlert('Ошибка сети', 'error');
+            }
+        }
+
+        async function penalizeUser(id, name) {
+            const amount = prompt(`Введите сумму штрафа для ${name}:`);
+            if (amount && !isNaN(amount) && parseInt(amount) > 0) {
+                try {
+                    const res = await apiFetch(`/api/users/${id}/penalty`, {
+                        method: 'POST',
+                        body: JSON.stringify({ amount: parseInt(amount) })
+                    });
+                    if (res.ok) {
+                        showAlert(`Штраф −${amount} для ${name}`);
+                        loadUsers();
+                    } else {
+                        const data = await res.json();
+                        showAlert(data.error || 'Ошибка штрафа', 'error');
+                    }
+                } catch (e) {
+                    if (e.message !== 'Unauthorized') showAlert('Ошибка сети', 'error');
+                }
+            }
+        }
+
+        async function deleteUser(id, name) {
+            if (confirm(`Удалить пользователя ${name}? Это действие нельзя отменить.`)) {
+                try {
+                    const res = await apiFetch(`/api/users/${id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        showAlert(`Пользователь ${name} удалён`);
+                        loadUsers();
+                    } else {
+                        const data = await res.json();
+                        showAlert(data.error || 'Ошибка удаления', 'error');
+                    }
+                } catch (e) {
+                    if (e.message !== 'Unauthorized') showAlert('Ошибка сети', 'error');
+                }
+            }
+        }
+
+        // ---- Challenges ----
+        async function loadChallenges() {
+            document.getElementById('challengesLoading').style.display = 'block';
+            document.getElementById('challengesTable').style.display = 'none';
+            try {
+                const res = await apiFetch('/api/challenges');
+                const challenges = await res.json();
+                const tbody = document.getElementById('challengesList');
+                tbody.innerHTML = '';
+
+                challenges.forEach(ch => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-weight:600;color:#f1f5f9;">${escapeHtml(ch.title)}</td>
+                        <td><span class="badge badge-category">${escapeHtml(ch.category)}</span></td>
+                        <td class="points">${ch.currentPoints} <span style="color:#475569;font-weight:400;font-size:12px;">(${ch.minPoints}–${ch.maxPoints})</span></td>
+                        <td class="solve-count">${ch.solveCount} чел.</td>
+                        <td>
+                            <button onclick="deleteChallenge('${ch.id}', '${escapeHtml(ch.title)}')" class="btn btn-delete">Удалить</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('challengesLoading').style.display = 'none';
+                document.getElementById('challengesTable').style.display = 'table';
+            } catch (e) {
+                if (e.message !== 'Unauthorized') showAlert('Ошибка загрузки заданий', 'error');
+            }
+        }
+
+        async function createChallenge() {
+            const data = {
+                title: document.getElementById('chTitle').value.trim(),
+                category: document.getElementById('chCategory').value.trim(),
+                description: document.getElementById('chDescription').value.trim(),
+                flag: document.getElementById('chFlag').value.trim(),
+                maxPoints: parseInt(document.getElementById('chMaxPoints').value),
+                minPoints: parseInt(document.getElementById('chMinPoints').value),
+                decay: parseInt(document.getElementById('chDecay').value)
+            };
+
+            if (!data.title || !data.category || !data.description || !data.flag) {
+                showAlert('Заполните все поля задания', 'error');
+                return;
+            }
+
+            if (data.maxPoints <= data.minPoints) {
+                showAlert('Макс. баллы должны быть больше мин. баллов', 'error');
+                return;
+            }
+
+            try {
+                const res = await apiFetch('/api/challenges', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (res.ok) {
+                    showAlert(`Задание "${data.title}" создано`);
+                    document.getElementById('chTitle').value = '';
+                    document.getElementById('chCategory').value = '';
+                    document.getElementById('chDescription').value = '';
+                    document.getElementById('chFlag').value = '';
+                    loadChallenges();
+                } else {
+                    showAlert(result.error || 'Ошибка создания', 'error');
+                }
+            } catch (e) {
+                if (e.message !== 'Unauthorized') showAlert('Ошибка сети', 'error');
+            }
+        }
+
+        async function deleteChallenge(id, title) {
+            if (confirm(`Удалить задание "${title}"? Все решения будут потеряны.`)) {
+                try {
+                    const res = await apiFetch(`/api/challenges/${id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        showAlert(`Задание "${title}" удалено`);
+                        loadChallenges();
+                    } else {
+                        const data = await res.json();
+                        showAlert(data.error || 'Ошибка удаления', 'error');
+                    }
+                } catch (e) {
+                    if (e.message !== 'Unauthorized') showAlert('Ошибка сети', 'error');
+                }
+            }
+        }
+
+        // ---- Scoreboard ----
+        async function loadScoreboard() {
+            document.getElementById('scoreboardLoading').style.display = 'block';
+            document.getElementById('scoreboardTable').style.display = 'none';
+            try {
+                const res = await apiFetch('/api/scoreboard');
+                const scores = await res.json();
+                const tbody = document.getElementById('scoreboardList');
+                tbody.innerHTML = '';
+
+                scores.forEach((s, idx) => {
+                    const tr = document.createElement('tr');
+                    const medals = ['🥇', '🥈', '🥉'];
+                    const rankDisplay = idx < 3 ? medals[idx] : (idx + 1);
+                    tr.innerHTML = `
+                        <td style="font-size:18px;text-align:center;">${rankDisplay}</td>
+                        <td style="font-weight:600;color:#f1f5f9;">${escapeHtml(s.fullName)} <span style="color:#64748b;font-weight:400;">@${escapeHtml(s.username)}</span></td>
+                        <td class="points" style="font-size:18px;">${s.totalPoints}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('scoreboardLoading').style.display = 'none';
+                document.getElementById('scoreboardTable').style.display = 'table';
+            } catch (e) {
+                if (e.message !== 'Unauthorized') showAlert('Ошибка загрузки рейтинга', 'error');
+            }
+        }
+
+        // ---- Helpers ----
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        // ---- Handle Enter key for login ----
+        document.getElementById('loginPassword').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') doLogin();
+        });
+        document.getElementById('loginUsername').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') doLogin();
+        });
+
+        // ---- Auto-login if token exists ----
+        (async function checkExistingToken() {
+            if (authToken) {
+                try {
+                    const res = await fetch('/api/users', {
+                        headers: { 'Authorization': 'Bearer ' + authToken }
+                    });
+                    if (res.ok) {
+                        showMainPanel();
+                        return;
+                    }
+                } catch (e) { }
+                // Token invalid
+                localStorage.removeItem('adminToken');
+                authToken = null;
+            }
+        })();
+    </script>
+</body>
+
+</html>
